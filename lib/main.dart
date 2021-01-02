@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce_app/screens/login_screen.dart';
 import 'package:flutter_ecommerce_app/screens/register_screen.dart';
 
 void main() {
@@ -32,6 +33,9 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: RegisterScreen(),
+      routes: {
+        LoginScreen.routeName: (ctx) => LoginScreen(),
+      },
     );
   }
 }

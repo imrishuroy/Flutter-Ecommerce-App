@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecommerce_app/screens/login_screen.dart';
 
-class RegisterScreen extends StatefulWidget {
+class LoginScreen extends StatefulWidget {
+  static String routeName = '/login-screen';
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  String _username, _email, _password;
-
+  String _email, _password;
   bool _obscureText = true;
 
   Text _showTitle(BuildContext context) {
     return Text(
-      'Register',
+      'Login',
       style: Theme.of(context).textTheme.headline5,
     );
   }
@@ -26,7 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (form.validate()) {
       form.save();
       print(
-        'Username : $_username \n Email : $_email \n Password : $_password',
+        'Email : $_email \n Password : $_password',
       );
     }
   }
@@ -36,7 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Register'),
+        title: Text('Login'),
       ),
       body: Container(
         padding: EdgeInsets.symmetric(
@@ -49,7 +48,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 children: [
                   _showTitle(context),
-                  _showUsernameInput(),
                   _showEmailInput(),
                   _showPasswordInput(),
                   _showFormActions(context)
@@ -84,10 +82,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           FlatButton(
             onPressed: () {
-              Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+              Navigator.pushReplacementNamed(context, '/');
             },
             child: Text(
-              'Already have an account? Login',
+              'New User? Register',
               style: TextStyle(
                 fontSize: 15.0,
               ),
@@ -108,9 +106,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: InputDecoration(
           suffixIcon: IconButton(
             onPressed: () {
-              setState(
-                () => _obscureText = !_obscureText,
-              );
+              setState(() {
+                _obscureText = !_obscureText;
+              });
             },
             icon: Icon(
               _obscureText ? Icons.visibility : Icons.visibility_off,
@@ -140,25 +138,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           hintText: 'Enter your email',
           icon: Icon(
             Icons.mail,
-            color: Colors.grey,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Padding _showUsernameInput() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20.0),
-      child: TextFormField(
-        onSaved: (value) => _username = value,
-        validator: (value) => value.length < 6 ? 'Username too short' : null,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(),
-          labelText: 'Username',
-          hintText: 'Enter username min len 6',
-          icon: Icon(
-            Icons.face,
             color: Colors.grey,
           ),
         ),
