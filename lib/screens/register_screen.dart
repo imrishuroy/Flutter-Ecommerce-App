@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce_app/screens/login_screen.dart';
+import 'package:flutter_ecommerce_app/screens/products_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -8,10 +11,11 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _username, _email, _password;
 
-  bool _obscureText = true;
+  bool _isSubmitting = false, _obscureText = true;
 
   Text _showTitle(BuildContext context) {
     return Text(
@@ -25,15 +29,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (form.validate()) {
       form.save();
-      print(
-        'Username : $_username \n Email : $_email \n Password : $_password',
-      );
+      //  print(
+      //   'Username : $_username \n Email : $_email \n Password : $_password',
+      // );
+      _registerUser();
     }
   }
+
+  void _registerUser() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+    http.Response response =
+        await http.post('http://localhost:1337/auth/local/register', body: {
+      "username": _username,
+      "email": _email,
+      "password": _password,
+    });
+    final responseData = json.decode(response.body);
+    setState(() {
+      _isSubmitting = false;
+    });
+    _showSnackBar();
+    if (response.statusCode == 200) {
+      Navigator.pushReplacementNamed(context, ProductsScreen.routeName);
+    }
+    print(responseData[0]);
+  }
+
+  _showSnackBar() {
+    final snackbar = SnackBar(
+      content: Text(
+        'User $_username succussfully created',
+        // message,
+        style: TextStyle(
+          color: Colors.green,
+        ),
+      ),
+    );
+
+    _scaffoldKey.currentState.showSnackBar(snackbar);
+    _formKey.currentState.reset();
+  }
+
+  // _redirectUser() {
+  //   Future.delayed(Duration(seconds: 2), () {
+  //     Navigator.pushReplacementNamed(context, ProductsScreen.routeName);
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         title: Text('Register'),
@@ -67,21 +115,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: EdgeInsets.only(top: 20.0),
       child: Column(
         children: [
-          RaisedButton(
-            elevation: 8.0,
-            color: Theme.of(context).accentColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            onPressed: _submit,
-            child: Text(
-              'Submit',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText2
-                  .copyWith(color: Colors.white),
-            ),
-          ),
+          _isSubmitting
+              ? CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(
+                    Colors.green,
+                  ),
+                )
+              : RaisedButton(
+                  elevation: 8.0,
+                  color: Theme.of(context).accentColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  onPressed: _submit,
+                  child: Text(
+                    'Submit',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .copyWith(color: Colors.white),
+                  ),
+                ),
           FlatButton(
             onPressed: () {
               Navigator.pushReplacementNamed(context, LoginScreen.routeName);
