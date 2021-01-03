@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce_app/screens/products_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
   static String routeName = '/login-screen';
@@ -8,9 +11,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _email, _password;
-  bool _obscureText = true;
+  bool _isSubmitting = false, _obscureText = true;
 
   Text _showTitle(BuildContext context) {
     return Text(
@@ -27,12 +31,78 @@ class _LoginScreenState extends State<LoginScreen> {
       print(
         'Email : $_email \n Password : $_password',
       );
+      _loginUser();
     }
   }
+
+  void _loginUser() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+    http.Response response =
+        await http.post('http://localhost:1337/auth/local', body: {
+      "identifier": _email,
+      "password": _password,
+    });
+    final responseData = json.decode(response.body);
+    print("Response Code : ${response.statusCode}");
+    if (response.statusCode == 200) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      _showSnackBar();
+
+      Navigator.pushReplacementNamed(context, ProductsScreen.routeName);
+
+      // print(responseData[0]);
+    } else {
+      setState(() => _isSubmitting = false);
+
+      final String errorMessage =
+          (responseData['message'][0]['messages'][0]['message']).toString();
+      print(errorMessage);
+      _showErrorSnack(errorMessage);
+    }
+  }
+
+  _showErrorSnack(String errorMessage) {
+    final snackbar = SnackBar(
+      content: Text(
+        errorMessage,
+        style: TextStyle(
+          color: Colors.red,
+        ),
+      ),
+    );
+    _scaffoldKey.currentState.showSnackBar(snackbar);
+    // throw Exception('Error Regisering $errorMessage');
+  }
+
+  _showSnackBar() {
+    final snackbar = SnackBar(
+      content: Text(
+        'User succussfully logged in',
+        // message,
+        style: TextStyle(
+          color: Colors.green,
+        ),
+      ),
+    );
+
+    _scaffoldKey.currentState.showSnackBar(snackbar);
+    _formKey.currentState.reset();
+  }
+
+  // _redirectUser() {
+  //   Future.delayed(Duration(seconds: 2), () {
+  //     Navigator.pushReplacementNamed(context, ProductsScreen.routeName);
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         centerTitle: true,
         title: Text('Login'),
@@ -65,21 +135,25 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: EdgeInsets.only(top: 20.0),
       child: Column(
         children: [
-          RaisedButton(
-            elevation: 8.0,
-            color: Theme.of(context).accentColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            onPressed: _submit,
-            child: Text(
-              'Submit',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText2
-                  .copyWith(color: Colors.white),
-            ),
-          ),
+          _isSubmitting
+              ? CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(Colors.green),
+                )
+              : RaisedButton(
+                  elevation: 8.0,
+                  color: Theme.of(context).accentColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  onPressed: _submit,
+                  child: Text(
+                    'Submit',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .copyWith(color: Colors.white),
+                  ),
+                ),
           FlatButton(
             onPressed: () {
               Navigator.pushReplacementNamed(context, '/');

@@ -47,14 +47,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
       "password": _password,
     });
     final responseData = json.decode(response.body);
-    setState(() {
-      _isSubmitting = false;
-    });
-    _showSnackBar();
     if (response.statusCode == 200) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      _showSnackBar();
+
       Navigator.pushReplacementNamed(context, ProductsScreen.routeName);
+
+      // print(responseData[0]);
+    } else {
+      setState(
+        () => _isSubmitting = false,
+      );
+
+      final String errorMessage =
+          (responseData['message'][0]['messages'][0]['message']).toString();
+      print(errorMessage);
+      _showErrorSnack(errorMessage);
     }
-    print(responseData[0]);
+  }
+
+  _showErrorSnack(String errorMessage) {
+    final snackbar = SnackBar(
+      content: Text(
+        errorMessage,
+        style: TextStyle(
+          color: Colors.red,
+        ),
+      ),
+    );
+    _scaffoldKey.currentState.showSnackBar(snackbar);
+    // throw Exception('Error Regisering $errorMessage');
   }
 
   _showSnackBar() {
